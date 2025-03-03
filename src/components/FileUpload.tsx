@@ -3,14 +3,23 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { B2Client } from '@/lib/backblaze';
+import { Button } from '@/components/ui/button';
 
 interface FileUploadProps {
   onUploadComplete?: (fileUrl: string) => void;
   onUploadError?: (error: Error) => void;
   onUploadProgress?: (progress: number) => void;
+  className?: string;
+  variant?: "outline" | "default";
 }
 
-export function FileUpload({ onUploadComplete, onUploadError, onUploadProgress }: FileUploadProps) {
+export function FileUpload({ 
+  onUploadComplete, 
+  onUploadError, 
+  onUploadProgress,
+  className,
+  variant = "default"
+}: FileUploadProps) {
   const { user } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -36,6 +45,7 @@ export function FileUpload({ onUploadComplete, onUploadError, onUploadProgress }
       });
 
       onUploadComplete?.(fileUrl);
+      setUploadProgress(0);
     } catch (error: any) {
       console.error('Upload failed:', error);
       onUploadError?.(error);
@@ -46,31 +56,19 @@ export function FileUpload({ onUploadComplete, onUploadError, onUploadProgress }
 
   return (
     <div className="relative">
-      <input
-        type="file"
-        onChange={handleFileChange}
+      <Button 
+        variant={variant}
+        className={className}
+        onClick={() => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.onchange = (e) => handleFileChange(e as any);
+          input.click();
+        }}
         disabled={isUploading}
-        className="block w-full text-sm text-slate-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-full file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-violet-50 file:text-violet-700
-                  hover:file:bg-violet-100
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-      />
-      {isUploading && (
-        <div className="mt-2">
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div
-              className="bg-violet-600 h-2.5 rounded-full transition-all duration-300"
-              style={{ width: `${uploadProgress}%` }}
-            />
-          </div>
-          <p className="text-sm text-gray-500 mt-1">
-            Uploading... {Math.round(uploadProgress)}%
-          </p>
-        </div>
-      )}
+      >
+        Choose file
+      </Button>
     </div>
   );
 } 
