@@ -39,7 +39,7 @@ export default function Home() {
 
           <div>
             <Button variant="outline" asChild className="font-light">
-              <Link href="#">
+              <Link href="/login">
                 Login <ArrowRight className="ml-2 h-3.5 w-3.5" />
               </Link>
             </Button>
