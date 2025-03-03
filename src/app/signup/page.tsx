@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Globe, Shield, Users, CheckCircle, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 
+export const dynamic = 'force-dynamic'
+
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)

@@ -10,6 +10,9 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 
+// This can be static as it shows fixed pricing information
+export const dynamic = 'force-static'
+
 export default function PricingPage() {
   const [selectedPlan, setSelectedPlan] = useState<"basic" | "enterprise">("basic")
 

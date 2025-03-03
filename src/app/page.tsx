@@ -1,3 +1,6 @@
+// This can be static as it's just the landing page with no dynamic content
+export const dynamic = 'force-static'
+
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"

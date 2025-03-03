@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Globe, Shield, CheckCircle, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 
+// This should be dynamic as it handles auth state
+export const dynamic = 'force-dynamic'
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)

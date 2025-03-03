@@ -5,6 +5,9 @@ import { createBrowserClient } from '@/lib/supabase';
 import { FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// This must be dynamic as it handles share tokens
+export const dynamic = 'force-dynamic'
+
 export default function SharedFilePage({ params }: { params: { token: string } }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

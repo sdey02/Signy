@@ -18,6 +18,9 @@ const supabase = createClient(
   }
 );
 
+// This must be dynamic as it handles file deletions
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { fileId, fileName, userId } = await request.json();

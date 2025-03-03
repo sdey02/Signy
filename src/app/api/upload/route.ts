@@ -26,6 +26,9 @@ const supabase = createClient(
   }
 );
 
+// This must be dynamic as it handles file uploads
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     // Initialize B2 client

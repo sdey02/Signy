@@ -23,6 +23,8 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
 type Document = Database['public']['Tables']['documents']['Row'];
 
+export const dynamic = 'force-dynamic'
+
 export default function Dashboard() {
   const { user, signOut } = useAuth()
   const { toast } = useToast()

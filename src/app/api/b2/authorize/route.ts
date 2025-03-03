@@ -6,6 +6,8 @@ const b2 = new B2({
   applicationKey: process.env.NEXT_PUBLIC_B2_APPLICATION_KEY!,
 });
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const authResponse = await b2.authorize();
