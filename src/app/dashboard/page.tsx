@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { BarChart, FileText, Grid, Home, MoreVertical, Search, Settings, ShieldCheck, X, Upload, ChevronsUpDown } from "lucide-react"
+import { BarChart, FileText, Grid, Home, Share2, Pencil, Trash2, Search, Settings, ShieldCheck, X, Upload, ChevronsUpDown } from "lucide-react"
 import { format } from "date-fns"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -79,6 +79,47 @@ export default function Dashboard() {
       description: error.message,
       variant: "destructive",
     })
+  }
+
+  const handleDelete = async (doc: Document) => {
+    try {
+      const response = await fetch('/api/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileId: doc.b2_file_id,
+          fileName: doc.file_name,
+          userId: user?.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete file');
+      }
+
+      // Remove the deleted document from the state
+      setDocuments(documents.filter(d => d.id !== doc.id));
+
+      toast({
+        title: `"${doc.file_name}" deleted`,
+        description: "File has been permanently deleted.",
+        action: (
+          <Button variant="ghost" size="sm" className="text-white hover:text-white hover:bg-[#333]" onClick={() => {}}>
+            Dismiss
+          </Button>
+        )
+      });
+    } catch (error: any) {
+      console.error('Delete failed:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete file",
+        variant: "destructive",
+      });
+    }
   }
 
   const filteredDocuments = documents.filter(doc => 
@@ -204,7 +245,7 @@ export default function Dashboard() {
                     <TableHead>Sent to</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Last modified</TableHead>
-                    <TableHead className="w-12"></TableHead>
+                    <TableHead className="w-[136px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -246,27 +287,34 @@ export default function Dashboard() {
                           <div className="text-gray-400">{format(new Date(doc.created_at), "MMM d, yyyy")}</div>
                         </TableCell>
                         <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                                <span className="sr-only">More options</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-[#1a1a1a] border-[#333] text-white">
-                              <DropdownMenuItem className="hover:bg-[#333]">
-                                <a 
-                                  href={doc.file_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="w-full"
-                                >
-                                  View file
-                                </a>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-400 hover:bg-[#333]">Delete file</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <div className="flex items-center gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-gray-400 transition-colors hover:text-blue-400 hover:bg-[rgba(96,165,250,0.1)]"
+                            >
+                              <Share2 className="h-4 w-4" />
+                              <span className="sr-only">Share file</span>
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-gray-400 transition-colors hover:text-green-400 hover:bg-[rgba(34,197,94,0.1)]"
+                              onClick={() => window.open(doc.file_url, '_blank')}
+                            >
+                              <Pencil className="h-4 w-4" />
+                              <span className="sr-only">Edit file</span>
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-red-400 transition-colors hover:text-red-400 hover:bg-[rgba(239,68,68,0.1)]"
+                              onClick={() => handleDelete(doc)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Delete file</span>
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
