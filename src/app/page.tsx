@@ -73,8 +73,11 @@ export default function Home() {
           <Button
             size="lg"
             className="mt-12 bg-gradient-to-b from-[#f2c4c4] to-[#edb5b5] text-black hover:from-[#f5d0d0] hover:to-[#f0bebe] font-normal text-sm tracking-wide"
+            asChild
           >
-            Get Started for free
+            <Link href="/signup">
+              Get Started for free
+            </Link>
           </Button>
 
           <p className="text-gray-400 mt-6 text-sm font-light tracking-wide">
