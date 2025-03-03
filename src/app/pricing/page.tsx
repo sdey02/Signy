@@ -1,0 +1,244 @@
+"use client"
+
+import { useState } from "react"
+import { Check } from "lucide-react"
+import { cn } from "@/lib/utils"
+import Link from "next/link"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+
+export default function PricingPage() {
+  const [selectedPlan, setSelectedPlan] = useState<"basic" | "enterprise">("basic")
+
+  return (
+    <div className="flex min-h-screen bg-[#121212] text-white relative overflow-hidden">
+      {/* Background grid pattern */}
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(242, 196, 196, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(242, 196, 196, 0.2) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      {/* Main content */}
+      <div className="container relative z-10 mx-auto px-4 py-16">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <p className="mb-4 text-sm font-medium uppercase tracking-wider text-[#edb5b5]">PRICING</p>
+          <h1 className="mb-4 text-4xl font-bold md:text-5xl lg:text-6xl">Simple Pricing. Start for Free</h1>
+          <p className="mx-auto max-w-2xl text-gray-400">Everything you need for creating and managing agreements</p>
+        </div>
+
+        {/* Pricing cards */}
+        <RadioGroup
+          value={selectedPlan}
+          onValueChange={(value) => setSelectedPlan(value as "basic" | "enterprise")}
+          className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-2"
+        >
+          {/* Basic Plan */}
+          <div className="relative">
+            <RadioGroupItem value="basic" id="basic" className="sr-only" />
+            <Label htmlFor="basic">
+              <Card
+                className={cn(
+                  "cursor-pointer bg-[#1a1a1a]/80 backdrop-blur-md border-[#333] text-white transition-all duration-300 rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.1)]",
+                  selectedPlan === "basic" ? "ring-2 ring-[#edb5b5] ring-offset-2 ring-offset-[#121212]" : "",
+                )}
+              >
+                {/* Subtle highlight at the top */}
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#ffffff20] to-transparent"></div>
+                
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold">Basic</h3>
+                      <p className="text-sm text-gray-400">For startups and growing companies</p>
+                    </div>
+                    <div className="h-10 w-10 rounded-full bg-[#2a2a2a] p-2">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-white"
+                      >
+                        <path
+                          d="M12 2L2 7L12 12L22 7L12 2Z"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <p className="text-4xl font-bold">
+                      $0 <span className="text-lg font-normal text-gray-400">user</span>
+                    </p>
+                    <p className="text-sm text-gray-400">per month</p>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-6">
+                  <ul className="space-y-4">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Basic document templates</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Up to 5 agreements per month</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Electronic signatures</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Email notifications</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Basic API access</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Community support</span>
+                    </li>
+                  </ul>
+                </CardContent>
+
+                <CardFooter className="pt-6">
+                  <Button
+                    className={cn(
+                      "w-full rounded-full",
+                      selectedPlan === "basic"
+                        ? "bg-gradient-to-b from-[#f2c4c4] to-[#edb5b5] text-black hover:from-[#f5d0d0] hover:to-[#f0bebe] font-medium shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.4)]"
+                        : "bg-[#2a2a2a] text-white hover:bg-[#333333]",
+                    )}
+                    asChild
+                  >
+                    <Link href="/signup">
+                      Get Started
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            </Label>
+          </div>
+
+          {/* Enterprise Plan */}
+          <div className="relative">
+            <RadioGroupItem value="enterprise" id="enterprise" className="sr-only" />
+            <Label htmlFor="enterprise">
+              <Card
+                className={cn(
+                  "cursor-pointer bg-[#1a1a1a]/80 backdrop-blur-md border-[#333] text-white transition-all duration-300 rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.1)]",
+                  selectedPlan === "enterprise" ? "ring-2 ring-[#edb5b5] ring-offset-2 ring-offset-[#121212]" : "",
+                )}
+              >
+                {/* Subtle highlight at the top */}
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#ffffff20] to-transparent"></div>
+                
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold">Enterprise</h3>
+                      <p className="text-sm text-gray-400">For global enterprises with custom needs</p>
+                    </div>
+                    <div className="h-10 w-10 rounded-full bg-[#2a2a2a] p-2">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-white"
+                      >
+                        <path
+                          d="M22 12H18L15 21L9 3L6 12H2"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <p className="text-4xl font-bold">
+                      $20 <span className="text-lg font-normal text-gray-400">user</span>
+                    </p>
+                    <p className="text-sm text-gray-400">per month</p>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-6">
+                  <ul className="space-y-4">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Custom document templates</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Unlimited agreements</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Advanced e-signatures with authentication</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Workflow automation</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Full API access with dedicated support</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Priority 24/7 support</span>
+                    </li>
+                  </ul>
+                </CardContent>
+
+                <CardFooter className="pt-6">
+                  <Button
+                    className={cn(
+                      "w-full rounded-full",
+                      selectedPlan === "enterprise"
+                        ? "bg-gradient-to-b from-[#f2c4c4] to-[#edb5b5] text-black hover:from-[#f5d0d0] hover:to-[#f0bebe] font-medium shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.4)]"
+                        : "bg-[#2a2a2a] text-white hover:bg-[#333333]",
+                    )}
+                    asChild
+                  >
+                    <Link href="/contact">
+                      Contact Sales
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            </Label>
+          </div>
+        </RadioGroup>
+
+        {/* Additional info */}
+        <div className="mt-16 text-center">
+          <h2 className="mb-6 text-2xl font-bold">Have Questions?</h2>
+          <p className="mx-auto mb-8 max-w-2xl text-gray-400">
+            Our team is here to help you find the perfect plan for your business. 
+            Get in touch with us for a personalized consultation.
+          </p>
+          <Link href="#" className="text-[#edb5b5] hover:underline">
+            Contact our sales team →
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+} 
