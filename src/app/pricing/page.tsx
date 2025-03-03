@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check } from "lucide-react"
+import { Check, User, Building } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 
@@ -30,8 +30,15 @@ export default function PricingPage() {
         {/* Header */}
         <div className="mb-12 text-center">
           <p className="mb-4 text-sm font-medium uppercase tracking-wider text-[#edb5b5]">PRICING</p>
-          <h1 className="mb-4 text-4xl font-bold md:text-5xl lg:text-6xl">Simple Pricing. Start for Free</h1>
-          <p className="mx-auto max-w-2xl text-gray-400">Everything you need for creating and managing agreements</p>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-center mb-4">
+            <span className="bg-gradient-to-r from-white via-white to-gray-500 bg-clip-text text-transparent inline-block leading-[1.2] pb-1">
+              Simple, transparent pricing
+            </span>
+          </h1>
+          <p className="text-gray-400 text-base font-light leading-relaxed tracking-wide text-center mb-8 max-w-2xl mx-auto">
+            No matter the size of your team, our pricing is designed to scale with your needs.
+            Choose the plan that works best for you.
+          </p>
         </div>
 
         {/* Pricing cards */}
@@ -59,29 +66,15 @@ export default function PricingPage() {
                       <h3 className="text-xl font-bold">Basic</h3>
                       <p className="text-sm text-gray-400">For startups and growing companies</p>
                     </div>
-                    <div className="h-10 w-10 rounded-full bg-[#2a2a2a] p-2">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-white"
-                      >
-                        <path
-                          d="M12 2L2 7L12 12L22 7L12 2Z"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                    <div className="h-10 w-10 rounded-full bg-[#2a2a2a] p-2 flex items-center justify-center">
+                      <User className="h-6 w-6 text-white" />
                     </div>
                   </div>
 
                   <div className="mt-4">
                     <p className="text-4xl font-bold">
-                      $0 <span className="text-lg font-normal text-gray-400">user</span>
+                      $0 <span className="text-lg font-normal text-gray-400">per month</span>
                     </p>
-                    <p className="text-sm text-gray-400">per month</p>
                   </div>
                 </CardHeader>
 
@@ -94,22 +87,6 @@ export default function PricingPage() {
                     <li className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-[#edb5b5]" />
                       <span>Up to 5 agreements per month</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-[#edb5b5]" />
-                      <span>Electronic signatures</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-[#edb5b5]" />
-                      <span>Email notifications</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-[#edb5b5]" />
-                      <span>Basic API access</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-[#edb5b5]" />
-                      <span>Community support</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -152,29 +129,15 @@ export default function PricingPage() {
                       <h3 className="text-xl font-bold">Enterprise</h3>
                       <p className="text-sm text-gray-400">For global enterprises with custom needs</p>
                     </div>
-                    <div className="h-10 w-10 rounded-full bg-[#2a2a2a] p-2">
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-white"
-                      >
-                        <path
-                          d="M22 12H18L15 21L9 3L6 12H2"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                    <div className="h-10 w-10 rounded-full bg-[#2a2a2a] p-2 flex items-center justify-center">
+                      <Building className="h-6 w-6 text-white" />
                     </div>
                   </div>
 
                   <div className="mt-4">
                     <p className="text-4xl font-bold">
-                      $20 <span className="text-lg font-normal text-gray-400">user</span>
+                      $5 <span className="text-lg font-normal text-gray-400">per month</span>
                     </p>
-                    <p className="text-sm text-gray-400">per month</p>
                   </div>
                 </CardHeader>
 
@@ -190,19 +153,11 @@ export default function PricingPage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-5 w-5 text-[#edb5b5]" />
-                      <span>Advanced e-signatures with authentication</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-[#edb5b5]" />
-                      <span>Workflow automation</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-[#edb5b5]" />
-                      <span>Full API access with dedicated support</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-[#edb5b5]" />
                       <span>Priority 24/7 support</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-[#edb5b5]" />
+                      <span>Priority feature requests</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -215,11 +170,8 @@ export default function PricingPage() {
                         ? "bg-gradient-to-b from-[#f2c4c4] to-[#edb5b5] text-black hover:from-[#f5d0d0] hover:to-[#f0bebe] font-medium shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.4)]"
                         : "bg-[#2a2a2a] text-white hover:bg-[#333333]",
                     )}
-                    asChild
                   >
-                    <Link href="/contact">
-                      Contact Sales
-                    </Link>
+                    Contact Sales
                   </Button>
                 </CardFooter>
               </Card>
