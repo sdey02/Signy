@@ -2,13 +2,21 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Globe, Shield, CheckCircle, Eye, EyeOff } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const { signIn } = useAuth()
+  const router = useRouter()
 
   const handleFocus = (fieldName: string) => {
     setFocusedField(fieldName)
@@ -18,10 +26,21 @@ export default function LoginPage() {
     setFocusedField(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Form submission logic would go here
-    console.log("Login form submitted")
+    setError(null)
+    setIsLoading(true)
+
+    try {
+      const { error: signInError } = await signIn(email, password)
+      if (signInError) {
+        setError(signInError.message)
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -115,6 +134,8 @@ export default function LoginPage() {
                   name="email"
                   type="email"
                   placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className={`bg-[#1a1a1a]/90 border-[#333] text-white pl-9
                             shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]
                             focus:shadow-[0_0_0_2px_rgba(237,181,181,0.5),0_0_0_4px_rgba(237,181,181,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)]
@@ -154,6 +175,8 @@ export default function LoginPage() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className={`bg-[#1a1a1a]/90 border-[#333] text-white pl-9 pr-9
                             shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]
                             focus:shadow-[0_0_0_2px_rgba(237,181,181,0.5),0_0_0_4px_rgba(237,181,181,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)]
@@ -177,6 +200,12 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {error && (
+              <div className="rounded-md bg-red-950/50 border border-red-900/50 p-4">
+                <div className="text-sm text-red-500">{error}</div>
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
               <input 
                 type="checkbox" 
@@ -190,14 +219,16 @@ export default function LoginPage() {
 
             <Button
               type="submit"
+              disabled={isLoading}
               className="w-full bg-gradient-to-b from-[#f2c4c4] to-[#edb5b5] text-black font-medium
                         shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.4)]
                         hover:shadow-[0_6px_15px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.4)]
                         active:shadow-[0_2px_5px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)]
                         active:translate-y-0.5
-                        transition-all duration-200"
+                        transition-all duration-200
+                        disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login
+              {isLoading ? "Signing in..." : "Login"}
             </Button>
 
             <div className="text-center text-sm">

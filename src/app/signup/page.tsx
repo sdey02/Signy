@@ -2,13 +2,24 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Globe, Shield, Users, CheckCircle, Eye, EyeOff } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [focusedField, setFocusedField] = useState<string | null>(null)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const { signUp } = useAuth()
+  const router = useRouter()
 
   const handleFocus = (fieldName: string) => {
     setFocusedField(fieldName)
@@ -18,10 +29,48 @@ export default function SignupPage() {
     setFocusedField(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Form submission logic would go here
-    console.log("Form submitted")
+    setError(null)
+    setIsLoading(true)
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long")
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const { error: signUpError } = await signUp(email, password)
+      if (signUpError) {
+        setError(signUpError.message)
+      } else {
+        setIsSuccess(true)
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to create account")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#121212] text-white relative overflow-hidden">
+        <div className="w-full max-w-md mx-auto px-4 py-8 text-center">
+          <h2 className="text-3xl font-bold mb-4">Check your email</h2>
+          <p className="text-gray-400 mb-8">
+            We've sent you a confirmation email. Please check your inbox and follow the instructions to complete your registration.
+          </p>
+          <Button
+            onClick={() => router.push("/login")}
+            className="bg-gradient-to-b from-[#f2c4c4] to-[#edb5b5] text-black font-medium"
+          >
+            Return to Login
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -127,6 +176,8 @@ export default function SignupPage() {
                     id="firstName"
                     name="firstName"
                     placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
                     className={`bg-[#1a1a1a]/90 border-[#333] text-white pl-9
                               shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]
                               focus:shadow-[0_0_0_2px_rgba(237,181,181,0.5),0_0_0_4px_rgba(237,181,181,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)]
@@ -147,6 +198,8 @@ export default function SignupPage() {
                     id="lastName"
                     name="lastName"
                     placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
                     className={`bg-[#1a1a1a]/90 border-[#333] text-white pl-9
                               shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]
                               focus:shadow-[0_0_0_2px_rgba(237,181,181,0.5),0_0_0_4px_rgba(237,181,181,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)]
@@ -170,6 +223,8 @@ export default function SignupPage() {
                   name="email"
                   type="email"
                   placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className={`bg-[#1a1a1a]/90 border-[#333] text-white pl-9
                             shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]
                             focus:shadow-[0_0_0_2px_rgba(237,181,181,0.5),0_0_0_4px_rgba(237,181,181,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)]
@@ -204,6 +259,8 @@ export default function SignupPage() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className={`bg-[#1a1a1a]/90 border-[#333] text-white pl-9 pr-9
                             shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]
                             focus:shadow-[0_0_0_2px_rgba(237,181,181,0.5),0_0_0_4px_rgba(237,181,181,0.25),inset_0_1px_3px_rgba(0,0,0,0.2)]
@@ -228,16 +285,24 @@ export default function SignupPage() {
               <p className="text-xs text-gray-400">Minimum length is 8 characters.</p>
             </div>
 
+            {error && (
+              <div className="rounded-md bg-red-950/50 border border-red-900/50 p-4">
+                <div className="text-sm text-red-500">{error}</div>
+              </div>
+            )}
+
             <Button
               type="submit"
+              disabled={isLoading}
               className="w-full bg-gradient-to-b from-[#f2c4c4] to-[#edb5b5] text-black font-medium
                         shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.4)]
                         hover:shadow-[0_6px_15px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.4)]
                         active:shadow-[0_2px_5px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.4)]
                         active:translate-y-0.5
-                        transition-all duration-200"
+                        transition-all duration-200
+                        disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign Up
+              {isLoading ? "Creating account..." : "Sign Up"}
             </Button>
 
             <div className="text-sm text-gray-400">
@@ -253,7 +318,7 @@ export default function SignupPage() {
             <div className="text-center text-sm">
               <p className="text-gray-400">
                 Already have an account?{" "}
-                <Link href="#" className="text-[#edb5b5] hover:underline">
+                <Link href="/login" className="text-[#edb5b5] hover:underline">
                   Login
                 </Link>
               </p>
