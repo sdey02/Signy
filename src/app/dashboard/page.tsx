@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Toaster } from "@/components/ui/toaster"
@@ -17,8 +16,10 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { createBrowserClient } from "@/lib/supabase"
-import { Database } from "@/lib/database.types"
+import { Database } from "@/lib/databasextypes"
 import { FileUpload } from "@/components/FileUpload"
+import { ShareModal } from "@/components/ShareModal"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
 type Document = Database['public']['Tables']['documents']['Row'];
 
@@ -29,6 +30,8 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState("")
   const supabase = createBrowserClient()
+  const [isShareModalOpen, setIsShareModalOpen] = React.useState(false)
+  const [selectedDoc, setSelectedDoc] = React.useState<Document | null>(null)
 
   React.useEffect(() => {
     async function loadDocuments() {
@@ -67,17 +70,17 @@ export default function Dashboard() {
         
       setDocuments(data as Document[] || [])
       toast({
-        title: "Success",
         description: "File uploaded successfully",
+        className: "bg-[#1a1a1a] text-white border border-[#333]",
       })
     }
   }
 
   const handleUploadError = (error: Error) => {
     toast({
-      title: "Error",
       description: error.message,
       variant: "destructive",
+      className: "bg-[#1a1a1a] text-red-400 border border-red-500/50",
     })
   }
 
@@ -100,24 +103,17 @@ export default function Dashboard() {
         throw new Error(error.message || 'Failed to delete file');
       }
 
-      // Remove the deleted document from the state
       setDocuments(documents.filter(d => d.id !== doc.id));
-
       toast({
-        title: `"${doc.file_name}" deleted`,
-        description: "File has been permanently deleted.",
-        action: (
-          <Button variant="ghost" size="sm" className="text-white hover:text-white hover:bg-[#333]" onClick={() => {}}>
-            Dismiss
-          </Button>
-        )
+        description: `"${doc.file_name}" has been permanently deleted`,
+        className: "bg-[#1a1a1a] text-white border border-[#333]",
       });
     } catch (error: any) {
       console.error('Delete failed:', error);
       toast({
-        title: "Error",
         description: error.message || "Failed to delete file",
         variant: "destructive",
+        className: "bg-[#1a1a1a] text-red-400 border border-red-500/50",
       });
     }
   }
@@ -292,6 +288,10 @@ export default function Dashboard() {
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 text-gray-400 transition-colors hover:text-blue-400 hover:bg-[rgba(96,165,250,0.1)]"
+                              onClick={() => {
+                                setSelectedDoc(doc);
+                                setIsShareModalOpen(true);
+                              }}
                             >
                               <Share2 className="h-4 w-4" />
                               <span className="sr-only">Share file</span>
@@ -326,6 +326,17 @@ export default function Dashboard() {
         </main>
       </div>
       <Toaster />
+      {selectedDoc && (
+        <ShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => {
+            setIsShareModalOpen(false);
+            setSelectedDoc(null);
+          }}
+          documentId={selectedDoc.id}
+          fileName={selectedDoc.file_name}
+        />
+      )}
     </div>
   )
 } 
