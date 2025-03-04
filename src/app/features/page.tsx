@@ -37,7 +37,7 @@ export default function FeaturesPage() {
           <Link href="/features" className="text-white text-sm font-light">
             Features
           </Link>
-          <Link href="#" className="text-gray-400 hover:text-white text-sm font-light">
+          <Link href="/enterprise" className="text-gray-400 hover:text-white text-sm font-light">
             Enterprise
           </Link>
           <Link href="/pricing" className="text-gray-400 hover:text-white text-sm font-light">
@@ -83,7 +83,7 @@ export default function FeaturesPage() {
         {/* Feature Card 1 - Templates */}
         <div className="bg-[#1e1e1e] rounded-lg p-6 border border-[#2a2a2a] hover:border-[#3a3a3a] transition-all">
           <div className="mb-4">
-            <FileText className="h-6 w-6 text-white opacity-80" />
+            <FileText className="h-6 w-6 text-[#edb5b5]" />
           </div>
           <h3 className="text-xl font-medium mb-2 text-white">Smart Templates</h3>
           <p className="text-gray-400 text-sm mb-6">
@@ -110,7 +110,7 @@ template("Service Agreement") {
         {/* Feature Card 2 - Document Tracking */}
         <div className="bg-[#1e1e1e] rounded-lg p-6 border border-[#2a2a2a] hover:border-[#3a3a3a] transition-all">
           <div className="mb-4">
-            <Clock className="h-6 w-6 text-white opacity-80" />
+            <Clock className="h-6 w-6 text-[#edb5b5]" />
           </div>
           <h3 className="text-xl font-medium mb-2 text-white">Document Tracking</h3>
           <p className="text-gray-400 text-sm mb-6">
@@ -118,8 +118,8 @@ template("Service Agreement") {
           </p>
           <div className="space-y-3">
             <div className="flex items-center">
-              <div className="h-5 w-5 rounded-full bg-green-500 mr-2 flex items-center justify-center">
-                <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="h-5 w-5 rounded-full bg-[#edb5b5] mr-2 flex items-center justify-center">
+                <svg className="h-3 w-3 text-[#121212]" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -130,8 +130,8 @@ template("Service Agreement") {
             </div>
             
             <div className="flex items-center">
-              <div className="h-5 w-5 rounded-full bg-green-500 mr-2 flex items-center justify-center">
-                <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="h-5 w-5 rounded-full bg-[#edb5b5] mr-2 flex items-center justify-center">
+                <svg className="h-3 w-3 text-[#121212]" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -140,8 +140,8 @@ template("Service Agreement") {
             </div>
             
             <div className="flex items-center">
-              <div className="h-5 w-5 rounded-full bg-green-500 mr-2 flex items-center justify-center">
-                <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="h-5 w-5 rounded-full bg-[#edb5b5] mr-2 flex items-center justify-center">
+                <svg className="h-3 w-3 text-[#121212]" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -170,7 +170,7 @@ template("Service Agreement") {
         {/* Feature Card 3 - Security & Compliance */}
         <div className="bg-[#1e1e1e] rounded-lg p-6 border border-[#2a2a2a] hover:border-[#3a3a3a] transition-all">
           <div className="mb-4">
-            <Shield className="h-6 w-6 text-white opacity-80" />
+            <Shield className="h-6 w-6 text-[#edb5b5]" />
           </div>
           <h3 className="text-xl font-medium mb-2 text-white">Security & Compliance</h3>
           <p className="text-gray-400 text-sm mb-6">
@@ -191,7 +191,7 @@ const security = {
 }`}
             </pre>
             <div className="flex items-center rounded bg-[#1a2a1a] border border-[#2a4a2a] p-3 mt-2">
-              <div className="text-green-400 mr-3">
+              <div className="text-[#edb5b5] mr-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
               </div>
               <div>

@@ -42,7 +42,7 @@ export default function Home() {
             <Link href="/features" className="text-gray-400 hover:text-white text-sm font-light">
               Features
             </Link>
-            <Link href="#" className="text-gray-400 hover:text-white text-sm font-light">
+            <Link href="/enterprise" className="text-gray-400 hover:text-white text-sm font-light">
               Enterprise
             </Link>
             <Link href="/pricing" className="text-gray-400 hover:text-white text-sm font-light">
