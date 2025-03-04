@@ -9,8 +9,18 @@ import { Badge } from "@/components/ui/badge"
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#121212] text-white overflow-hidden relative">
+      {/* Background grid pattern */}
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(242, 196, 196, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(242, 196, 196, 0.2) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
+      />
+      
       {/* Main content */}
-      <div>
+      <div className="relative z-10">
         {/* Navigation */}
         <nav className="flex justify-between items-center py-6 px-8">
           <div className="flex items-center">
@@ -26,10 +36,10 @@ export default function Home() {
           </div>
 
           <div className="hidden md:flex space-x-8">
-            <Link href="#" className="text-gray-400 hover:text-white text-sm font-light">
+            <Link href="/" className="text-gray-400 hover:text-white text-sm font-light">
               About
             </Link>
-            <Link href="#" className="text-gray-400 hover:text-white text-sm font-light">
+            <Link href="/features" className="text-gray-400 hover:text-white text-sm font-light">
               Features
             </Link>
             <Link href="#" className="text-gray-400 hover:text-white text-sm font-light">
