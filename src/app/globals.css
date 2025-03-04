@@ -125,5 +125,48 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    overflow: hidden; /* Prevent body scrolling */
   }
+}
+
+/* Custom PDF Viewer Styles */
+.rpv-core__viewer {
+  --rpv-core__inner-page-background-color: #333 !important;
+  --rpv-core__outer-page-background-color: #252525 !important;
+}
+
+.rpv-default-layout__container {
+  border: none !important;
+  background: #252525 !important;
+  height: 100% !important;
+}
+
+.rpv-toolbar {
+  background: #1a1a1a !important;
+  border-bottom: 1px solid #333 !important;
+}
+
+.rpv-toolbar__item {
+  color: #ffffff !important;
+}
+
+/* Hide default sidebar toggle button since we provide our own */
+[data-testid="default-layout__sidebar-toggle"] {
+  display: none !important;
+}
+
+/* Hide the theme switcher button */
+[data-testid="theme__light"], 
+[data-testid="theme__dark"] {
+  display: none !important;
+}
+
+/* Make sure the core viewer takes full height */
+.rpv-core__viewer-container {
+  height: 100% !important;
+}
+
+/* Ensure PDF content area scrolls properly */
+.rpv-core__inner-pages {
+  overflow: auto !important;
 }
