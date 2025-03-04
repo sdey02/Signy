@@ -3,6 +3,7 @@
 import * as React from "react"
 import { BarChart, FileText, Grid, Home, Share2, Pencil, Trash2, Search, Settings, ShieldCheck, X, Upload, ChevronsUpDown } from "lucide-react"
 import { format } from "date-fns"
+import { useRouter } from "next/navigation"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -16,7 +17,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { createBrowserClient } from "@/lib/supabase"
-import { Database } from "@/lib/databasextypes"
+import { Database } from "@/lib/database.types"
 import { FileUpload } from "@/components/FileUpload"
 import { ShareModal } from "@/components/ShareModal"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const supabase = createBrowserClient()
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false)
   const [selectedDoc, setSelectedDoc] = React.useState<Document | null>(null)
+  const router = useRouter()
 
   React.useEffect(() => {
     async function loadDocuments() {
@@ -118,6 +120,10 @@ export default function Dashboard() {
         className: "bg-[#1a1a1a] text-red-400 border border-red-500/50",
       });
     }
+  }
+
+  const handleEditDocument = (doc: Document) => {
+    router.push(`/editor?fileUrl=${encodeURIComponent(doc.file_url)}&fileName=${encodeURIComponent(doc.file_name)}&documentId=${encodeURIComponent(doc.id)}`)
   }
 
   const filteredDocuments = documents.filter(doc => 
@@ -302,7 +308,7 @@ export default function Dashboard() {
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 text-gray-400 transition-colors hover:text-green-400 hover:bg-[rgba(34,197,94,0.1)]"
-                              onClick={() => window.open(doc.file_url, '_blank')}
+                              onClick={() => handleEditDocument(doc)}
                             >
                               <Pencil className="h-4 w-4" />
                               <span className="sr-only">Edit file</span>
