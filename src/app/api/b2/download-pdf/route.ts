@@ -1,44 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
 import B2 from 'backblaze-b2';
 
-const b2 = new B2({
-  applicationKeyId: process.env.NEXT_PUBLIC_B2_APPLICATION_KEY_ID!,
-  applicationKey: process.env.NEXT_PUBLIC_B2_APPLICATION_KEY!,
-});
-
+// Configure the API route with longer timeout
+export const maxDuration = 300; // 5 minutes timeout
 export const dynamic = 'force-dynamic';
 
+// Function to handle proxying a PDF from B2
 export async function GET(request: NextRequest) {
   try {
-    // Get the file URL from query params
-    const url = request.nextUrl.searchParams.get('url');
+    // Get the file URL from the query parameters
+    const fileUrl = request.nextUrl.searchParams.get('fileUrl');
     
-    if (!url) {
-      return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
-    }
-    
-    console.log(`B2 download request for: ${url}`);
-    
-    // Extract file info from URL
-    // Example URL format: https://f004.backblazeb2.com/file/Orion-BackBlaze/documents/68076df7-fde2-4678-aad7-87abca8d403e/1741065230226-Ace_Your_Tech_Interview.pdf
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    
-    // The bucket name is the first part after /file/
-    const bucketName = pathParts[2];
-    
-    // The file name is everything after the bucket name
-    const fileName = pathParts.slice(3).join('/');
-    
-    console.log(`Extracted bucket: ${bucketName}, fileName: ${fileName}`);
-    
-    // Check that we have valid B2 credentials
-    if (!process.env.NEXT_PUBLIC_B2_APPLICATION_KEY_ID || !process.env.NEXT_PUBLIC_B2_APPLICATION_KEY) {
-      console.error('Missing B2 credentials in environment variables');
+    if (!fileUrl) {
       return NextResponse.json({
-        error: 'Server configuration error: Missing B2 credentials',
-      }, { status: 500 });
+        error: 'Missing fileUrl parameter',
+      }, { status: 400 });
     }
+    
+    // Parse the URL to get bucket and file path information
+    let bucketName = '';
+    let fileName = '';
+    
+    try {
+      const url = new URL(fileUrl);
+      // For BackBlaze URLs, format is https://f004.backblazeb2.com/file/{bucketName}/{filePath}
+      const pathParts = url.pathname.split('/');
+      if (pathParts[1] === 'file' && pathParts.length >= 3) {
+        bucketName = pathParts[2];
+        fileName = pathParts.slice(3).join('/');
+      } else {
+        throw new Error('Invalid BackBlaze URL format');
+      }
+    } catch (parseError) {
+      console.error('Error parsing file URL:', parseError);
+      return NextResponse.json({
+        error: 'Invalid file URL format',
+        details: parseError instanceof Error ? parseError.message : String(parseError),
+      }, { status: 400 });
+    }
+    
+    // Initialize B2 client
+    const b2 = new B2({
+      applicationKeyId: process.env.NEXT_PUBLIC_B2_APPLICATION_KEY_ID!,
+      applicationKey: process.env.NEXT_PUBLIC_B2_APPLICATION_KEY!,
+    });
     
     try {
       // Authorize with B2
@@ -63,6 +68,8 @@ export async function GET(request: NextRequest) {
       headers.set('Content-Type', 'application/pdf');
       headers.set('Content-Length', fileBuffer.byteLength.toString());
       headers.set('Access-Control-Allow-Origin', '*');
+      headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
       headers.set('Cache-Control', 'public, max-age=3600');
       
       return new NextResponse(fileBuffer, {
@@ -89,18 +96,11 @@ export async function GET(request: NextRequest) {
       
       throw b2Error; // Re-throw to be caught by the outer catch
     }
-  } catch (error: any) {
-    console.error('Error downloading PDF from B2:', error);
-    
-    // Determine if this is a network error
-    const isNetworkError = error.message?.includes('network') || 
-                          error.code === 'ECONNREFUSED' ||
-                          error.code === 'ENOTFOUND';
-    
+  } catch (error) {
+    console.error('Error in download-pdf API route:', error);
     return NextResponse.json({ 
-      error: 'Failed to download PDF file',
-      details: error.message || String(error),
-      isNetworkError: isNetworkError
-    }, { status: isNetworkError ? 503 : 500 });
+      error: 'Failed to download PDF',
+      details: error instanceof Error ? error.message : String(error),
+    }, { status: 500 });
   }
 } 

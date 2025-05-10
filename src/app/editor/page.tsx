@@ -61,9 +61,8 @@ function EditorContent() {
       if (!fileUrl) return;
 
       try {
-        // Try to fetch existing labels
-        const labelsUrl = `${fileUrl}.labels.json`;
-        const response = await fetch(labelsUrl);
+        // Use our API endpoint instead of direct fetching
+        const response = await fetch(`/api/b2/get-labels?fileUrl=${encodeURIComponent(fileUrl)}`);
         
         if (response.ok) {
           const existingLabels = await response.json();
@@ -144,37 +143,51 @@ function EditorContent() {
     }
   }
 
+  // Return the UI
   return (
-    <div className="flex flex-col h-screen bg-[#1a1a1a]">
+    <div className="flex flex-col h-screen bg-[#1a1a1a] text-white">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-[#333]">
+      <header className="flex items-center justify-between p-4 border-b border-[#333]">
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="icon"
+          <Button 
             onClick={handleBackToDashboard}
+            variant="ghost" 
+            size="icon"
             className="text-gray-400 hover:text-white"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft size={20} />
           </Button>
-          <h1 className="text-xl font-semibold text-white">
+          <h1 className="text-lg font-medium truncate max-w-md">
             {fileName || 'Document Editor'}
           </h1>
         </div>
-        <Button 
-          onClick={handleSave}
-          disabled={isSaving}
-          className="bg-[#edb5b5] text-black hover:bg-[#e9a0a0]"
-        >
-          {isSaving ? (
-            <>Saving...</>
-          ) : (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </>
-          )}
-        </Button>
+        
+        <div className="flex items-center space-x-2">
+          <Button
+            size="sm"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            variant="outline"
+            className="border-gray-700 text-sm"
+          >
+            {sidebarOpen ? 'Hide Labels' : 'Show Labels'}
+          </Button>
+          
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="bg-[#edb5b5] text-black hover:bg-[#e9a0a0]"
+          >
+            {isSaving ? (
+              <>Saving...</>
+            ) : (
+              <>
+                <Save size={16} className="mr-2" />
+                Save
+              </>
+            )}
+          </Button>
+        </div>
       </header>
 
       <main className="flex flex-1 overflow-hidden">
@@ -227,11 +240,11 @@ function EditorContent() {
   )
 }
 
-// Main page component with Suspense boundary
+// Export a page component that uses the client component
 export default function EditorPage() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col h-screen bg-[#1a1a1a] items-center justify-center">
+      <div className="flex items-center justify-center p-10 min-h-screen bg-[#1a1a1a] text-white">
         <p className="text-gray-400">Loading editor...</p>
       </div>
     }>

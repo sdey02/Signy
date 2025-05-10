@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import B2 from 'backblaze-b2';
 
+// Configure for dynamic behavior and longer timeout
+export const dynamic = 'force-dynamic';
+export const maxDuration = 120; // 2 minutes
+
+// Set up B2 client
 const b2 = new B2({
   applicationKeyId: process.env.NEXT_PUBLIC_B2_APPLICATION_KEY_ID!,
   applicationKey: process.env.NEXT_PUBLIC_B2_APPLICATION_KEY!,
 });
+
+// Define headers for OPTIONS requests (preflight)
+export async function OPTIONS(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  headers.set('Access-Control-Max-Age', '86400'); // 24 hours
+  
+  return new NextResponse(null, { status: 204, headers });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -50,12 +66,25 @@ export async function POST(request: NextRequest) {
       mime: 'application/json'
     });
 
-    return NextResponse.json({ success: true });
+    // Set CORS headers in response
+    const headers = new Headers();
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return NextResponse.json({ success: true }, { headers });
   } catch (error) {
     console.error('Error saving labels:', error);
+    
+    // Set CORS headers even in error response
+    const headers = new Headers();
+    headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
     return NextResponse.json({ 
       error: 'Failed to save labels',
       details: error instanceof Error ? error.message : String(error),
-    }, { status: 500 });
+    }, { status: 500, headers });
   }
 } 

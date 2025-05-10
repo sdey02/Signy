@@ -1,5 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Configure for dynamic behavior and longer timeout
+export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // 5 minutes timeout
+
+/**
+ * Handle OPTIONS requests for CORS preflight
+ */
+export async function OPTIONS(request: NextRequest) {
+  const headers = new Headers();
+  headers.set('Access-Control-Allow-Origin', '*');
+  headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  headers.set('Access-Control-Max-Age', '86400'); // 24 hours
+  
+  return new NextResponse(null, { status: 204, headers });
+}
+
 /**
  * This API route proxies requests to PDF files to bypass CORS restrictions.
  * It fetches the PDF file from the provided URL and returns it with appropriate headers.
@@ -74,6 +91,8 @@ export async function GET(request: NextRequest) {
     headers.set('Content-Type', 'application/pdf');
     headers.set('Content-Length', fileBuffer.byteLength.toString());
     headers.set('Access-Control-Allow-Origin', '*');
+    headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     headers.set('Cache-Control', 'public, max-age=3600');
     
     return new NextResponse(fileBuffer, {

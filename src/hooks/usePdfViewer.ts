@@ -41,7 +41,7 @@ export const usePdfViewer = ({ fileUrl, initialLabels = [] }: UsePdfViewerProps)
           // Handle BackBlaze URLs specially
           if (fileUrl.includes('backblazeb2.com')) {
             console.log('Using B2 endpoint for BackBlaze URL');
-            setPdfUrl(`/api/b2/download-pdf?url=${encodeURIComponent(fileUrl)}`);
+            setPdfUrl(`/api/b2/download-pdf?fileUrl=${encodeURIComponent(fileUrl)}`);
           } else {
             // General proxy for other URLs
             console.log('Using general proxy for URL');

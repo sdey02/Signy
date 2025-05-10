@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 export const config = {
   api: {
     bodyParser: false,
-    responseLimit: '200mb',
+    responseLimit: '1000mb',
   },
 };
 
@@ -28,6 +28,8 @@ const supabase = createClient(
 
 // This must be dynamic as it handles file uploads
 export const dynamic = 'force-dynamic'
+// Define max file size that we can handle
+export const maxDuration = 300; // 5 minutes timeout
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,8 +55,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Check file size (200MB limit)
-    const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB in bytes
+    // Check file size (500MB limit)
+    const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB in bytes
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: `File size exceeds limit (${Math.round(file.size / (1024 * 1024))}MB > ${MAX_FILE_SIZE / (1024 * 1024)}MB)` },
@@ -82,6 +84,8 @@ export async function POST(request: NextRequest) {
       uploadAuthToken: authorizationToken,
       fileName: storagePath,
       data: buffer,
+      contentLength: buffer.length,
+      mime: file.type || 'application/octet-stream'
     });
 
     // Generate public URL
