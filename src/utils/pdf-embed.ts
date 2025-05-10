@@ -121,7 +121,7 @@ export async function embedFieldsIntoPdf(
   // Save the modified PDF
   const modifiedPdfBytes = await pdfDoc.save();
   
-  return modifiedPdfBytes.buffer;
+  return modifiedPdfBytes.buffer as ArrayBuffer;
 }
 
 /**
@@ -138,29 +138,29 @@ function drawRectangle(
 ) {
   // Draw the border as four lines
   page.drawLine({
-    start: { x, y },
-    end: { x + width, y },
+    start: { x: x, y: y },
+    end: { x: x + width, y: y },
     thickness: borderWidth,
     color,
   });
   
   page.drawLine({
-    start: { x + width, y },
-    end: { x + width, y + height },
+    start: { x: x + width, y: y },
+    end: { x: x + width, y: y + height },
     thickness: borderWidth,
     color,
   });
   
   page.drawLine({
-    start: { x + width, y + height },
-    end: { x, y + height },
+    start: { x: x + width, y: y + height },
+    end: { x: x, y: y + height },
     thickness: borderWidth,
     color,
   });
   
   page.drawLine({
-    start: { x, y + height },
-    end: { x, y },
+    start: { x: x, y: y + height },
+    end: { x: x, y: y },
     thickness: borderWidth,
     color,
   });
