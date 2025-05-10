@@ -30,13 +30,40 @@ export async function GET(request: NextRequest) {
       }, { status: 403 });
     }
     
+    // Check if this is a BackBlaze URL
+    const isBackBlazeUrl = parsedUrl.hostname.includes('backblazeb2.com');
+    
     // Fetch the file
     const response = await fetch(url);
+    
+    // Handle authentication errors
+    if (response.status === 401 || response.status === 403) {
+      console.error(`Authentication error (${response.status}) accessing PDF at ${url}`);
+      
+      // For BackBlaze URLs, suggest using the specialized endpoint
+      if (isBackBlazeUrl) {
+        return NextResponse.json({
+          error: 'Authentication error accessing BackBlaze file. Try using the /api/b2/download-pdf endpoint instead.',
+          useB2Endpoint: true
+        }, { status: 401 });
+      }
+      
+      return NextResponse.json({
+        error: `Authentication error (${response.status}) accessing PDF file. The file might require authorization.`,
+      }, { status: 401 });
+    }
     
     if (!response.ok) {
       return NextResponse.json({
         error: `Failed to fetch PDF, status: ${response.status}`,
+        details: await response.text().catch(() => 'No error details available')
       }, { status: response.status });
+    }
+    
+    // Verify the content type is a PDF
+    const contentType = response.headers.get('content-type');
+    if (contentType && !contentType.includes('pdf') && !contentType.includes('octet-stream')) {
+      console.warn(`Warning: Content-Type is not a PDF: ${contentType}`);
     }
     
     // Get the file content as ArrayBuffer

@@ -1,10 +1,14 @@
 import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Inter, Dancing_Script } from "next/font/google"
 import { AuthProvider } from "@/lib/auth-context"
 
 const inter = Inter({ subsets: ["latin"] })
+const dancingScript = Dancing_Script({ 
+  subsets: ["latin"],
+  variable: '--font-dancing-script'
+})
 
 export const metadata: Metadata = {
   title: "Signy - An All-In-One Agreements Platform",
@@ -19,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={inter.className}>
+      <body className={`${inter.className} ${dancingScript.variable}`}>
         <AuthProvider>
           {children}
         </AuthProvider>

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { LabelOverlay, Label } from './LabelOverlay';
 
@@ -8,6 +8,7 @@ interface LabelContainerProps {
   onLabelsChange: (labels: Label[]) => void;
   selectedLabel?: { type?: string; color?: string; icon: string };
   existingLabels?: Label[];
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function LabelContainer({
@@ -16,39 +17,41 @@ export function LabelContainer({
   onLabelsChange,
   selectedLabel,
   existingLabels = [],
+  containerRef: externalContainerRef,
 }: LabelContainerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const localContainerRef = useRef<HTMLDivElement>(null);
   const [labels, setLabels] = useState<Label[]>([]);
   const [isLabelPlacementMode, setIsLabelPlacementMode] = useState(false);
   const lastAddedTypeRef = useRef<string | null>(null);
+  
+  // Use the external container ref if provided, otherwise use the local one
+  const effectiveContainerRef = externalContainerRef || localContainerRef;
 
-  /* Load stored labels for the current page */
+  // Load stored labels for the current page
   useEffect(() => {
-    setLabels(existingLabels.filter(l => l.pageNumber === pageNumber));
+    const filteredLabels = existingLabels.filter(l => l.pageNumber === pageNumber);
+    setLabels(filteredLabels);
   }, [pageNumber, existingLabels]);
 
-  /* Enter label placement mode when a label type is selected */
+  // Handle label type changes
   useEffect(() => {
-    console.log("Selected label changed:", selectedLabel);
     if (selectedLabel?.type) {
-      console.log("Entering label placement mode");
       setIsLabelPlacementMode(true);
       lastAddedTypeRef.current = null; // Reset so we can add multiple of the same type
     } else {
-      console.log("Exiting label placement mode");
       setIsLabelPlacementMode(false);
     }
   }, [selectedLabel]);
 
-  /* Handle clicking on the container to place a new label */
-  const handleContainerClick = (e: React.MouseEvent) => {
-    console.log("Container clicked");
-    console.log("isLabelPlacementMode:", isLabelPlacementMode);
-    console.log("selectedLabel:", selectedLabel);
-    console.log("containerRef exists:", !!containerRef.current);
-    
-    if (!isLabelPlacementMode || !selectedLabel?.type || !containerRef.current) {
-      console.log("Returning early from click handler");
+  // Update parent component with label changes
+  const updateParentLabels = useCallback((updatedPageLabels: Label[]) => {
+    const labelsForOtherPages = existingLabels.filter(l => l.pageNumber !== pageNumber);
+    onLabelsChange([...labelsForOtherPages, ...updatedPageLabels]);
+  }, [existingLabels, pageNumber, onLabelsChange]);
+
+  // Handle clicking on the container to place a new label
+  const handleContainerClick = useCallback((e: React.MouseEvent) => {
+    if (!isLabelPlacementMode || !selectedLabel?.type || !effectiveContainerRef.current) {
       return;
     }
 
@@ -57,11 +60,9 @@ export function LabelContainer({
     e.preventDefault();
     
     // Get click position relative to container
-    const containerRect = containerRef.current.getBoundingClientRect();
+    const containerRect = effectiveContainerRef.current.getBoundingClientRect();
     const x = (e.clientX - containerRect.left) / scale;
     const y = (e.clientY - containerRect.top) / scale;
-    
-    console.log("Creating new label at position:", { x, y });
 
     // Create new label at click position
     const newLabel: Label = {
@@ -77,116 +78,84 @@ export function LabelContainer({
       pageNumber,
     };
 
-    console.log("New label created:", newLabel);
+    const updatedLabels = [...labels, newLabel];
+    
+    // Update local state
+    setLabels(updatedLabels);
+    
+    // Update parent state with all labels
+    updateParentLabels(updatedLabels);
 
-    const updated = [...labels, newLabel];
-    setLabels(updated);
-    onLabelsChange([
-      ...existingLabels.filter(l => l.pageNumber !== pageNumber),
-      ...updated,
-    ]);
-
-    // Exit placement mode
+    // Exit placement mode after placing a label
     lastAddedTypeRef.current = selectedLabel.type;
     setIsLabelPlacementMode(false);
-  };
+  }, [isLabelPlacementMode, selectedLabel, effectiveContainerRef, scale, labels, pageNumber, updateParentLabels]);
 
   /* helpers for <LabelOverlay> */
-  const updatePosition = (id: string, x: number, y: number) =>
+  const updatePosition = useCallback((id: string, x: number, y: number) => {
     setLabels(prev => {
       const next = prev.map(l => (l.id === id ? { ...l, x, y } : l));
-      onLabelsChange([
-        ...existingLabels.filter(l => l.pageNumber !== pageNumber),
-        ...next,
-      ]);
+      
+      // Update parent with all labels including the updated one
+      updateParentLabels(next);
+      
       return next;
     });
+  }, [updateParentLabels]);
 
-  const updateSize = (id: string, width: number, height: number) =>
+  const updateSize = useCallback((id: string, width: number, height: number) => {
     setLabels(prev => {
       const next = prev.map(l => (l.id === id ? { ...l, width, height } : l));
-      onLabelsChange([
-        ...existingLabels.filter(l => l.pageNumber !== pageNumber),
-        ...next,
-      ]);
+      
+      // Update parent with all labels including the updated one
+      updateParentLabels(next);
+      
       return next;
     });
+  }, [updateParentLabels]);
 
-  const updateText = (id: string, text: string) =>
+  const updateText = useCallback((id: string, text: string) => {
     setLabels(prev => {
       const next = prev.map(l => (l.id === id ? { ...l, text } : l));
-      onLabelsChange([
-        ...existingLabels.filter(l => l.pageNumber !== pageNumber),
-        ...next,
-      ]);
+      
+      // Update parent with all labels including the updated one
+      updateParentLabels(next);
+      
       return next;
     });
+  }, [updateParentLabels]);
 
-  console.log("Rendering LabelContainer, isLabelPlacementMode:", isLabelPlacementMode);
-  console.log("Currently have", labels.length, "labels on page", pageNumber);
-
-  /* ---------------- render ---------------- */
   return (
     <div
-      ref={containerRef}
-      className="absolute inset-0 pointer-events-auto"
-      onClick={handleContainerClick}
+      ref={localContainerRef}
+      className="absolute inset-0"
       style={{
         /* Match the viewer's zoom so overlays sit directly on top of the page */
         transform: `scale(${scale})`,
         transformOrigin: 'top left',
         cursor: isLabelPlacementMode ? 'crosshair' : 'default',
+        pointerEvents: isLabelPlacementMode ? 'auto' : 'none',
+        zIndex: 999,
       }}
     >
-      {/* Debug button to test label placement */}
-      {isLabelPlacementMode && (
-        <button
-          className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded z-[9999]"
-          style={{ transform: 'scale(1)' }}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!selectedLabel?.type || !containerRef.current) return;
-            
-            // Create new label at a fixed position
-            const newLabel: Label = {
-              id: uuidv4(),
-              type: selectedLabel.type.toLowerCase(),
-              text: 'Debug Label',
-              x: 100,
-              y: 100,
-              width: 200,
-              height: 100,
-              color: selectedLabel.color,
-              icon: selectedLabel.icon,
-              pageNumber,
-            };
-
-            console.log("Debug label created:", newLabel);
-
-            const updated = [...labels, newLabel];
-            setLabels(updated);
-            onLabelsChange([
-              ...existingLabels.filter(l => l.pageNumber !== pageNumber),
-              ...updated,
-            ]);
-          }}
-        >
-          Add Debug Label
-        </button>
-      )}
-
+      {/* Clickable overlay for placing labels */}
       {isLabelPlacementMode && (
         <div 
-          className="absolute inset-0 bg-blue-500 bg-opacity-20 pointer-events-none" 
-          style={{ zIndex: 999 }}
+          className="absolute inset-0 bg-blue-500 bg-opacity-20"
+          onClick={handleContainerClick}
+          style={{ 
+            pointerEvents: 'auto',
+            zIndex: 999 
+          }}
         />
       )}
 
+      {/* Render all labels for this page */}
       {labels.map(label => (
         <LabelOverlay
           key={label.id}
           label={label}
-          containerRef={containerRef}
+          containerRef={effectiveContainerRef}
           onPositionChange={updatePosition}
           onSizeChange={updateSize}
           onTextChange={updateText}

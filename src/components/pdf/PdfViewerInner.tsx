@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Viewer, SpecialZoomLevel, Worker, LoadError } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import { fullScreenPlugin } from '@react-pdf-viewer/full-screen';
 import { zoomPlugin } from '@react-pdf-viewer/zoom';
 import { LabelContainer } from './LabelContainer';
 import { Label } from './LabelOverlay';
+import { getPdfProxyUrl, getPdfErrorMessage } from '@/utils/pdf-utils';
 
 // Import the styles
 import '@react-pdf-viewer/core/lib/styles/index.css';
@@ -44,6 +45,10 @@ export default function PdfViewerInner({
   const [scale, setScale] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [allLabels, setAllLabels] = useState<Label[]>(initialLabels);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
+
+  // Keep track of which pages have been seen to correctly place labels
+  const [seenPages, setSeenPages] = useState<Set<number>>(new Set());
 
   // Load initial labels
   useEffect(() => {
@@ -53,6 +58,41 @@ export default function PdfViewerInner({
   // Create plugins with custom layout options 
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     sidebarTabs: () => [], // Remove the sidebar completely
+    renderToolbar: (Toolbar) => (
+      <Toolbar>
+        {(slots) => {
+          const {
+            CurrentPageInput,
+            Download,
+            EnterFullScreen,
+            GoToNextPage,
+            GoToPreviousPage,
+            NumberOfPages,
+            Print,
+            ZoomIn,
+            ZoomOut,
+          } = slots;
+          return (
+            <div className="flex items-center justify-between w-full px-2 py-1 bg-[#252525] text-white">
+              <div className="flex items-center">
+                <GoToPreviousPage />
+                <GoToNextPage />
+                <div className="mx-2 flex items-center">
+                  <CurrentPageInput /> / <NumberOfPages />
+                </div>
+              </div>
+              <div className="flex items-center">
+                <ZoomOut />
+                <ZoomIn />
+                <EnterFullScreen />
+                <Download />
+                <Print />
+              </div>
+            </div>
+          );
+        }}
+      </Toolbar>
+    ),
   });
   
   const fullScreenPluginInstance = fullScreenPlugin();
@@ -65,35 +105,12 @@ export default function PdfViewerInner({
         // For worker: Use local worker directly to avoid fetch issues
         setWorkerUrl('/pdf-worker/pdf.worker.min.js');
         
-        // Check if we need to proxy the PDF URL (for CORS issues)
-        if (fileUrl && fileUrl.startsWith('http')) {
-          // Check if it's a BackBlaze URL
-          if (fileUrl.includes('backblazeb2.com')) {
-            console.log('Using B2 download API for BackBlaze URL');
-            setProxyFileUrl(`/api/b2/download-pdf?url=${encodeURIComponent(fileUrl)}`);
-          } else {
-            try {
-              // For non-BackBlaze URLs, test direct access first
-              const headResponse = await fetch(fileUrl, { method: 'HEAD' });
-              if (headResponse.ok) {
-                setProxyFileUrl(fileUrl);
-              } else {
-                // If direct access fails, use general proxy
-                console.log('Direct PDF access failed, using proxy');
-                setProxyFileUrl(`/api/proxy-pdf?url=${encodeURIComponent(fileUrl)}`);
-              }
-            } catch (error) {
-              console.error('Error testing PDF access:', error);
-              // If any error occurs, use the proxy
-              console.log('Error accessing PDF directly, using proxy');
-              setProxyFileUrl(`/api/proxy-pdf?url=${encodeURIComponent(fileUrl)}`);
-            }
-          }
-        }
+        // Process the URL through our utility function
+        setProxyFileUrl(getPdfProxyUrl(fileUrl));
         
         setIsLoading(false);
-      } catch (error) {
-        console.error('Error initializing PDF viewer:', error);
+      } catch (err) {
+        console.error('Error initializing PDF viewer:', err);
         setError('Failed to initialize PDF viewer. Please try again later.');
         setIsLoading(false);
       }
@@ -102,35 +119,45 @@ export default function PdfViewerInner({
     setup();
   }, [fileUrl]);
 
-  // Handle errors
-  const handleError = (error: LoadError) => {
+  // Create a separate handler that will be called from the component
+  const handleError = useCallback((error: LoadError) => {
     console.error('Error loading PDF:', error);
-    let errorMessage = error.message || 'Unknown error loading PDF';
     
-    // Provide more helpful message for common errors
-    if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
-      errorMessage = 'Failed to load the PDF file. This may be due to CORS restrictions or the file is not accessible.';
-    }
+    // Use our utility to get a user-friendly error message
+    const errorMessage = getPdfErrorMessage(error);
     
-    setError(errorMessage);
-  };
+    // Use setTimeout to avoid React state updates during render
+    setTimeout(() => {
+      setError(errorMessage);
+    }, 0);
+  }, []);
 
-  const handlePageChange = (e: any) => {
-    setCurrentPage(e.currentPage);
-  };
+  const handlePageChange = useCallback((e: any) => {
+    const newPage = e.currentPage;
+    
+    // Track that we've seen this page
+    setSeenPages(prev => new Set([...prev, newPage]));
+    
+    // Update current page - use setTimeout to avoid setState during render
+    setTimeout(() => {
+      setCurrentPage(newPage);
+    }, 0);
+  }, []);
 
-  const handleLabelsChange = (pageLabels: Label[]) => {
+  const handleLabelsChange = useCallback((pageLabels: Label[]) => {
     setAllLabels(pageLabels);
     if (onLabelsChange) {
       onLabelsChange(pageLabels);
     }
-  };
+  }, [onLabelsChange]);
 
   // Handle zoom level changes
-  const handleZoomChange = (e: any) => {
+  const handleZoomChange = useCallback((e: any) => {
     const newScale = e.scale;
-    setScale(newScale);
-  };
+    setTimeout(() => {
+      setScale(newScale);
+    }, 0);
+  }, []);
 
   useEffect(() => {
     console.log("PdfViewerInner selectedLabel changed:", selectedLabel);
@@ -155,44 +182,64 @@ export default function PdfViewerInner({
   return (
     <div className={`bg-[#252525] w-full ${className}`} style={{ height }}>
       <Worker workerUrl={workerUrl}>
-        <div className="relative h-full">
-          <Viewer
-            fileUrl={proxyFileUrl}
-            plugins={[
-              defaultLayoutPluginInstance,
-              fullScreenPluginInstance,
-              zoomPluginInstance,
-            ]}
-            defaultScale={SpecialZoomLevel.PageFit}
-            theme="dark"
-            onDocumentLoad={onDocumentLoad}
-            onPageChange={handlePageChange}
-            onZoom={handleZoomChange}
-            renderError={(error) => {
-              handleError(error);
-              return (
-                <div className="text-center p-5 bg-red-100 text-red-700 rounded">
-                  <p>Failed to load PDF: {error.message || 'Unknown error'}</p>
-                  <p className="mt-2 text-sm">URL: {proxyFileUrl}</p>
-                </div>
-              );
-            }}
-          />
+        <div className="flex flex-col h-full overflow-hidden">
           <div 
-            className="absolute inset-0"
+            className="relative flex-grow overflow-auto" 
+            ref={pdfContainerRef}
             style={{ 
-              zIndex: 999,
-              pointerEvents: selectedLabel?.type ? 'auto' : 'none' 
+              height: '100%',
+              position: 'relative'
             }}
-            onClick={() => console.log("Outer container clicked")}
           >
-            <LabelContainer
-              pageNumber={currentPage}
-              scale={scale}
-              onLabelsChange={handleLabelsChange}
-              selectedLabel={selectedLabel}
-              existingLabels={allLabels}
+            <Viewer
+              fileUrl={proxyFileUrl}
+              plugins={[
+                defaultLayoutPluginInstance,
+                fullScreenPluginInstance,
+                zoomPluginInstance,
+              ]}
+              defaultScale={SpecialZoomLevel.PageFit}
+              theme="dark"
+              onDocumentLoad={onDocumentLoad}
+              onPageChange={handlePageChange}
+              onZoom={handleZoomChange}
+              renderError={(error) => {
+                // Schedule the error handling to avoid setState during render
+                setTimeout(() => handleError(error), 0);
+                
+                return (
+                  <div className="text-center p-5 bg-red-100 text-red-700 rounded">
+                    <p>Failed to load PDF: {error.message || 'Unknown error'}</p>
+                    <p className="mt-2 text-sm">URL: {proxyFileUrl}</p>
+                  </div>
+                );
+              }}
+              renderLoader={(percentages: number) => (
+                <div className="flex items-center justify-center h-full bg-[#252525]">
+                  <div className="text-center">
+                    <div className="text-white mb-2">Loading PDF...</div>
+                    <div className="w-48 h-2 bg-gray-700 rounded-full">
+                      <div 
+                        className="h-full bg-blue-500 rounded-full" 
+                        style={{ width: `${Math.max(5, percentages)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             />
+            
+            {/* Only render LabelContainer if currentPage is valid */}
+            {currentPage > 0 && (
+              <LabelContainer
+                pageNumber={currentPage}
+                scale={scale}
+                onLabelsChange={handleLabelsChange}
+                selectedLabel={selectedLabel}
+                existingLabels={allLabels}
+                containerRef={pdfContainerRef}
+              />
+            )}
           </div>
         </div>
       </Worker>

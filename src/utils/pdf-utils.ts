@@ -162,31 +162,123 @@ function drawRectangle(
   borderWidth = 1
 ) {
   // Draw the border as four lines
+  // Bottom line
   page.drawLine({
-    start: { x, y },
-    end: { x + width, y },
+    start: { x: x, y: y },
+    end: { x: x + width, y: y },
     thickness: borderWidth,
-    color,
+    color: color
   });
   
+  // Right line
   page.drawLine({
-    start: { x + width, y },
-    end: { x + width, y + height },
+    start: { x: x + width, y: y },
+    end: { x: x + width, y: y + height },
     thickness: borderWidth,
-    color,
+    color: color
   });
   
+  // Top line
   page.drawLine({
-    start: { x + width, y + height },
-    end: { x, y + height },
+    start: { x: x + width, y: y + height },
+    end: { x: x, y: y + height },
     thickness: borderWidth,
-    color,
+    color: color
   });
   
+  // Left line
   page.drawLine({
-    start: { x, y + height },
-    end: { x, y },
+    start: { x: x, y: y + height },
+    end: { x: x, y: y },
     thickness: borderWidth,
-    color,
+    color: color
   });
-} 
+}
+
+/**
+ * Utilities for PDF loading, validation, and error handling
+ */
+
+/**
+ * Check if a URL is a BackBlaze B2 URL
+ */
+export const isBackBlazeUrl = (url: string): boolean => {
+  if (!url) return false;
+  return url.includes('backblazeb2.com');
+};
+
+/**
+ * Get the appropriate URL for loading a PDF
+ * This handles proxying through our API endpoints for external PDFs
+ */
+export const getPdfProxyUrl = (url: string): string => {
+  if (!url) return '';
+  
+  // If it's not an external URL, return as is
+  if (!url.startsWith('http')) return url;
+  
+  // For BackBlaze URLs, use specialized endpoint
+  if (isBackBlazeUrl(url)) {
+    return `/api/b2/download-pdf?url=${encodeURIComponent(url)}`;
+  }
+  
+  // For all other external URLs, use general proxy
+  return `/api/proxy-pdf?url=${encodeURIComponent(url)}`;
+};
+
+/**
+ * Check if a local blob is a valid PDF
+ * Returns true if valid, false if not
+ */
+export const validatePdfBlob = async (blob: Blob): Promise<boolean> => {
+  try {
+    // Check the magic number for PDFs
+    // PDFs start with %PDF
+    const pdfMagicNumber = [0x25, 0x50, 0x44, 0x46]; // %PDF
+    
+    const buffer = await blob.slice(0, 4).arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    
+    // Check if the first 4 bytes match %PDF
+    return bytes[0] === pdfMagicNumber[0] &&
+           bytes[1] === pdfMagicNumber[1] &&
+           bytes[2] === pdfMagicNumber[2] &&
+           bytes[3] === pdfMagicNumber[3];
+  } catch (error) {
+    console.error('Error validating PDF blob:', error);
+    return false;
+  }
+};
+
+/**
+ * Get a human-readable error message for PDF loading errors
+ */
+export const getPdfErrorMessage = (error: any): string => {
+  if (!error) return 'Unknown error loading PDF';
+  
+  // If error is a string, return it
+  if (typeof error === 'string') return error;
+  
+  // If error has a message property, return that
+  if (error.message) return error.message;
+  
+  // For network errors
+  if (error.status === 401 || error.status === 403) {
+    return 'Authentication error: You do not have permission to view this PDF';
+  }
+  
+  if (error.status === 404) {
+    return 'PDF file not found';
+  }
+  
+  if (error.status >= 500) {
+    return 'Server error while loading PDF';
+  }
+  
+  if (error.name === 'InvalidPDFException') {
+    return 'Invalid PDF file format';
+  }
+  
+  // If we can't determine a specific error, return a generic message
+  return 'Error loading PDF: ' + String(error);
+}; 
