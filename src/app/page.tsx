@@ -48,6 +48,9 @@ export default function Home() {
             <Link href="/pricing" className="text-gray-400 hover:text-white text-sm font-light">
               Pricing
             </Link>
+            <Link href="/pdf-editor" className="text-gray-400 hover:text-white text-sm font-light">
+              PDF Editor
+            </Link>
           </div>
 
           <div>

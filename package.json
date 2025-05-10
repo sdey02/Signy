@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "download-pdf-worker": "node scripts/download-pdf-worker.js"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.3",
@@ -22,9 +23,11 @@
     "@react-pdf-viewer/core": "^3.12.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
     "@react-pdf-viewer/full-screen": "^3.12.0",
+    "@react-pdf-viewer/page-navigation": "^3.12.0",
     "@react-pdf-viewer/zoom": "^3.12.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
+    "@types/uuid": "^10.0.0",
     "backblaze-b2": "^1.7.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -35,8 +38,10 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-pdf": "^9.2.1",
+    "react-rnd": "^10.5.2",
     "tailwind-merge": "^3.0.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -3,8 +3,10 @@
 import { useSearchParams, useRouter } from "next/navigation"
 import { ArrowLeft, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import dynamic from 'next/dynamic'
+import { Label } from "@/components/pdf/LabelOverlay"
+import { useToast } from "@/hooks/use-toast"
 
 // Dynamically import components with no SSR
 const NextPdfViewer = dynamic(
@@ -34,14 +36,47 @@ const LabelsPanel = dynamic(
 export default function EditorPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { toast } = useToast()
   
   // Get document information from URL parameters
   const fileUrl = searchParams.get("fileUrl")
   const fileName = searchParams.get("fileName")
   const documentId = searchParams.get("documentId")
   
-  // State for sidebar visibility
+  // State for sidebar visibility and labels
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [selectedLabel, setSelectedLabel] = useState<{
+    type: string;
+    color: string;
+    icon: string;
+  } | undefined>()
+  const [labels, setLabels] = useState<Label[]>([])
+  const [isSaving, setIsSaving] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Load existing labels when the document is opened
+  useEffect(() => {
+    const loadLabels = async () => {
+      if (!fileUrl) return;
+
+      try {
+        // Try to fetch existing labels
+        const labelsUrl = `${fileUrl}.labels.json`;
+        const response = await fetch(labelsUrl);
+        
+        if (response.ok) {
+          const existingLabels = await response.json();
+          setLabels(existingLabels);
+        }
+      } catch (error) {
+        console.log('No existing labels found');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadLabels();
+  }, [fileUrl]);
   
   // Handle going back to dashboard
   const handleBackToDashboard = () => {
@@ -55,45 +90,92 @@ export default function EditorPage() {
   
   // Handle label selection
   const handleLabelSelect = (label: any) => {
-    console.log('Label selected:', label)
-    // In a real implementation, this would place the label on the PDF
+    console.log('Label selected from panel:', label);
+    if (label && label.type) {
+      console.log('Setting selected label to:', label);
+      setSelectedLabel(label);
+    } else {
+      console.log('Clearing selected label');
+      setSelectedLabel(undefined);
+    }
   }
-  
+
+  // Handle labels change
+  const handleLabelsChange = (newLabels: Label[]) => {
+    setLabels(newLabels)
+  }
+
+  // Handle save
+  const handleSave = async () => {
+    if (!fileUrl || !documentId) return
+
+    setIsSaving(true)
+    try {
+      const response = await fetch('/api/b2/save-labels', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileUrl,
+          labels,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to save labels')
+      }
+
+      toast({
+        title: "Labels saved successfully",
+        description: "Your document labels have been saved.",
+      })
+    } catch (error) {
+      console.error('Error saving labels:', error)
+      toast({
+        title: "Error saving labels",
+        description: "There was a problem saving your document labels. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   return (
-    <div className="h-screen flex flex-col bg-[#121212] text-white overflow-hidden">
-      {/* Header - Fixed height */}
-      <header className="border-b border-[#333] bg-[#1a1a1a] p-4 flex-shrink-0">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleBackToDashboard}
-                className="text-gray-400 hover:text-white"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-xl font-bold truncate">{fileName || "Document Editor"}</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button className="bg-[#edb5b5] text-black hover:bg-[#e9a0a0] flex items-center gap-1">
-                <Save className="h-4 w-4" />
-                <span>Save Changes</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-[#333] hover:bg-[#333]"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-              >
-                {sidebarOpen ? 'Hide Tools' : 'Show Tools'}
-              </Button>
-            </div>
-          </div>
+    <div className="flex flex-col h-screen bg-[#1a1a1a]">
+      {/* Header */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-[#333]">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBackToDashboard}
+            className="text-gray-400 hover:text-white"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-xl font-semibold text-white">
+            {fileName || 'Document Editor'}
+          </h1>
         </div>
+        <Button 
+          onClick={handleSave}
+          disabled={isSaving}
+          className="bg-[#edb5b5] text-black hover:bg-[#e9a0a0]"
+        >
+          {isSaving ? (
+            <>Saving...</>
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Save
+            </>
+          )}
+        </Button>
       </header>
-      
-      {/* Main Content - Flex 1 to take remaining height */}
+
       <main className="flex flex-1 overflow-hidden">
         {!fileUrl ? (
           <div className="flex-1 flex items-center justify-center p-10">
@@ -109,6 +191,10 @@ export default function EditorPage() {
               </Button>
             </div>
           </div>
+        ) : isLoading ? (
+          <div className="flex-1 flex items-center justify-center p-10">
+            <p className="text-gray-400">Loading document labels...</p>
+          </div>
         ) : (
           <>
             {/* PDF Viewer Container - Scrollable content area */}
@@ -120,6 +206,9 @@ export default function EditorPage() {
                   onDocumentLoad={handleDocumentLoad}
                   height="100%"
                   className="h-full"
+                  selectedLabel={selectedLabel}
+                  onLabelsChange={handleLabelsChange}
+                  initialLabels={labels}
                 />
               </div>
             </div>

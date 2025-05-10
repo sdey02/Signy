@@ -2,48 +2,46 @@ declare module 'backblaze-b2' {
   interface B2Options {
     applicationKeyId: string;
     applicationKey: string;
-    retry?: {
-      retries?: number;
-      [key: string]: any;
-    };
-    axios?: any;
   }
 
-  interface B2Response {
+  interface B2Response<T> {
     status: number;
     statusText: string;
-    headers: any;
+    headers: Record<string, string>;
     config: any;
     request: any;
-    data: any;
+    data: T;
+  }
+
+  interface BucketInfo {
+    bucketId: string;
+    bucketName: string;
+    bucketType: string;
+  }
+
+  interface UploadUrlResponse {
+    uploadUrl: string;
+    authorizationToken: string;
   }
 
   class B2 {
     constructor(options: B2Options);
-    
-    authorize(options?: any): Promise<B2Response>;
-    
+    authorize(): Promise<B2Response<any>>;
+    getBucket(options: { bucketName: string }): Promise<B2Response<BucketInfo>>;
+    getUploadUrl(options: { bucketId: string }): Promise<B2Response<UploadUrlResponse>>;
+    uploadFile(options: {
+      uploadUrl: string;
+      uploadAuthToken: string;
+      fileName: string;
+      data: Buffer | ArrayBuffer;
+      contentLength: number;
+      mime?: string;
+    }): Promise<B2Response<any>>;
     downloadFileByName(options: {
       bucketName: string;
       fileName: string;
-      responseType: string;
-      onDownloadProgress?: (event: any) => void;
-      [key: string]: any;
-    }): Promise<B2Response>;
-    
-    downloadFileById(options: {
-      fileId: string;
-      responseType: string;
-      onDownloadProgress?: (event: any) => void;
-      [key: string]: any;
-    }): Promise<B2Response>;
-    
-    // Add other methods as needed
-    
-    KEY_CAPABILITIES: {
-      READ_FILES: string;
-      [key: string]: string;
-    };
+      responseType: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
+    }): Promise<B2Response<any>>;
   }
 
   export default B2;

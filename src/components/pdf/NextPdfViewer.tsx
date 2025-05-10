@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { Label } from './LabelOverlay';
 
 // Empty placeholder component to prevent import errors
 const EmptyComponent = () => <div>Loading PDF viewer...</div>;
@@ -25,6 +26,13 @@ interface NextPdfViewerProps {
   onDocumentLoad?: () => void;
   height?: string;
   className?: string;
+  selectedLabel?: {
+    type: string;
+    color: string;
+    icon: string;
+  };
+  onLabelsChange?: (labels: Label[]) => void;
+  initialLabels?: Label[];
 }
 
 export default function NextPdfViewer({
@@ -32,6 +40,9 @@ export default function NextPdfViewer({
   onDocumentLoad,
   height = 'calc(100vh - 250px)',
   className = '',
+  selectedLabel,
+  onLabelsChange,
+  initialLabels = [],
 }: NextPdfViewerProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -54,6 +65,9 @@ export default function NextPdfViewer({
       onDocumentLoad={onDocumentLoad}
       height={height}
       className={className}
+      selectedLabel={selectedLabel}
+      onLabelsChange={onLabelsChange}
+      initialLabels={initialLabels}
     />
   );
 } 

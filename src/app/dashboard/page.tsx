@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { BarChart, FileText, Grid, Home, Share2, Pencil, Trash2, Search, Settings, ShieldCheck, X, Upload, ChevronsUpDown } from "lucide-react"
+import { BarChart, FileText, Grid, Home, Share2, Pencil, Trash2, Search, Settings, ShieldCheck, X, Upload, ChevronsUpDown, FileSignature } from "lucide-react"
 import { format } from "date-fns"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -188,6 +189,12 @@ export default function Dashboard() {
                 <FileText className="h-4 w-4" />
                 <span>Templates</span>
               </Button>
+              <Link href="/pdf-editor" className="w-full">
+                <Button variant="ghost" className="justify-start gap-2 hover:bg-[#333] w-full">
+                  <FileSignature className="h-4 w-4" />
+                  <span>PDF Editor</span>
+                </Button>
+              </Link>
               <Button variant="ghost" className="justify-start gap-2 hover:bg-[#333] w-full">
                 <BarChart className="h-4 w-4" />
                 <span>Analysis</span>
