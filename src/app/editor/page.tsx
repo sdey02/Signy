@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from "next/navigation"
 import { ArrowLeft, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import dynamic from 'next/dynamic'
 import { Label } from "@/components/pdf/LabelOverlay"
 import { useToast } from "@/hooks/use-toast"
@@ -33,7 +33,8 @@ const LabelsPanel = dynamic(
   }
 )
 
-export default function EditorPage() {
+// Create a client component that uses useSearchParams
+function EditorContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { toast } = useToast()
@@ -223,5 +224,18 @@ export default function EditorPage() {
         )}
       </main>
     </div>
+  )
+}
+
+// Main page component with Suspense boundary
+export default function EditorPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col h-screen bg-[#1a1a1a] items-center justify-center">
+        <p className="text-gray-400">Loading editor...</p>
+      </div>
+    }>
+      <EditorContent />
+    </Suspense>
   )
 } 
