@@ -40,6 +40,35 @@ export interface Database {
           b2_file_id?: string
           user_id?: string
         }
+      },
+      signing_events: {
+        Row: {
+          id: string
+          document_id: string
+          user_id: string
+          event_type: string
+          ip_address: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          document_id: string
+          user_id: string
+          event_type: string
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          document_id?: string
+          user_id?: string
+          event_type?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
       }
     }
     Views: {

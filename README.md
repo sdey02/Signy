@@ -34,3 +34,10 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Audit Trail
+
+This project includes a basic audit trail API for document signing events. The
+`/api/track-event` endpoint records when a user views or signs a document along
+with the IP address and user agent. These events are stored in the
+`signing_events` table to help meet compliance requirements.
